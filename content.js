@@ -6,16 +6,32 @@
 
         chrome.runtime.sendMessage({ action: "checkLink", url: url }, response => {
             if (response && response.status) {
-                let symbol;
                 if (response.status === 403 || response.status === 503) {
-                    symbol = " 🔒"; // Cloudflare challenge
-                } else {
-                    symbol = response.status >= 200 && response.status < 400 ? " ✅" : " ❌";
+                  markLinkAsLocked(link);
+                } 
+                else if (response.status >= 200 && response.status < 400) {
+                  markLinkAsOk(link);
                 }
-                link.insertAdjacentText("afterend", symbol);
+                else {
+                  markLinkAsDead(link);
+                }
             } else {
-                link.insertAdjacentText("afterend", " ❌");
+                markLinkAsDead(link);
             }
         });
     });
 })();
+
+function markLinkAsLocked(link) {
+  link.insertAdjacentText("afterend", " 🔒");
+  link.style.border = "5px solid blue";
+  link.style.padding = "5px";
+}
+function markLinkAsDead(link) {
+  link.insertAdjacentText("afterend", " ❌");
+  link.style.border = "5px solid red";
+  link.style.padding = "5px";
+}
+function markLinkAsOk(link) {
+  link.insertAdjacentText("afterend", " ✅");
+}
