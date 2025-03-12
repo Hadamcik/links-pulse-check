@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
     "name": "Link Checker",
-    "version": "0.2",
-    "permissions": ["activeTab"],
+    "version": "0.3",
+    "permissions": ["activeTab", "storage"],
     "background": {
         "service_worker": "background.js"
     },
@@ -11,5 +11,9 @@
             "matches": ["<all_urls>"],
             "js": ["content.js"]
         }
-    ]
+    ],
+    "action": {
+        "default_popup": "popup.html",
+        "default_title": "View Checked Links"
+    }
 }

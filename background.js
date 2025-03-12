@@ -1,15 +1,31 @@
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.action === "checkLink") {
-        fetch(message.url, {
-            method: "HEAD",
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36",
-                "Referer": "https://www.google.com/",
-                "Accept-Language": "en-US,en;q=0.9"
+        fetch(message.url, { method: "HEAD" })
+            .then(response => sendResponse({ status: response.status }))
+            .catch(() => sendResponse({ status: 0 }));
+        return true;
+    } else if (message.action === "storeSession") {
+        chrome.storage.session.get({ sessionLinks: {} }, (data) => {
+            let sessionLinks = data.sessionLinks || {};
+            if (!sessionLinks[message.sourceUrl]) {
+                sessionLinks[message.sourceUrl] = [];
             }
-        })
-        .then(response => sendResponse({ status: response.status }))
-        .catch(() => sendResponse({ status: 0 }));
+
+            // Check if the link already exists
+            if (!sessionLinks[message.sourceUrl].some(link => link.targetUrl === message.targetUrl)) {
+                sessionLinks[message.sourceUrl].push({ targetUrl: message.targetUrl, type: message.type });
+                chrome.storage.session.set({ sessionLinks });
+            }
+        });
+    } else if (message.action === "getSession") {
+        chrome.storage.session.get({ sessionLinks: {} }, (data) => {
+            sendResponse({ sessionLinks: data.sessionLinks || {} });
+        });
+        return true;
+    } else if (message.action === "clearSession") {
+        chrome.storage.session.clear(() => {
+            sendResponse({ success: true });
+        });
         return true;
     }
 });
